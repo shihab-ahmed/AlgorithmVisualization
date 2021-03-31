@@ -1,9 +1,10 @@
 import pandas as pd
 import json as js
 
-file = 'LocationFile.xlsx'
+file = 'MRTK_Content.xlsx'
 xl = pd.read_excel(file, sheet_name="Sheet1", header=0)
-
+print(xl)
+"""
 data = {}
 data["locationSet"] = []
 for index, row in xl.iterrows():
@@ -21,3 +22,4 @@ for index, row in xl.iterrows():
 with open('data.json', 'w') as outfile:
     js.dump(data, outfile)
 print(data)
+"""
