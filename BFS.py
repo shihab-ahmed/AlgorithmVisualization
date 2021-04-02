@@ -27,7 +27,7 @@ grid = [['*', '0', '*', '*', '*', '0', '*', '0', '0', '*', '*', '0', '*', '*', '
 
 # Class for node
 class QItem:
-    def __init__(self, row, col, dist):
+    def __init__(self, row, col, dist, ):
         self.row = row
         self.col = col
         self.dist = dist
