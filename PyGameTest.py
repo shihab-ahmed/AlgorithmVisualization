@@ -10,6 +10,9 @@ RED = (255, 0, 0)
 WIDTH, HEIGHT = 1280, 720
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 FPS = 60
+VELOCITY = 2
+
+BORDER = pygame.Rect(WIDTH/2-5,0,10,HEIGHT)
 
 SPACESHIP_IMG1 = pygame.image.load("rocket1.png")
 SPACESHIP_IMG2 = pygame.image.load("rocket2.png")
@@ -20,8 +23,39 @@ SPACESHIP2 = pygame.transform.rotate(pygame.transform.scale(SPACESHIP_IMG2, (64,
 pygame.display.set_caption("Race")
 
 
+def Rocket1Controller(keys_pressed, rocketRect1):
+    # Left
+    if keys_pressed[pygame.K_a] and rocketRect1.x-1>0:
+        rocketRect1.x -= 1
+    # Right
+    if keys_pressed[pygame.K_d] and rocketRect1.x+1<BORDER.x:
+        rocketRect1.x += 1
+    # Up
+    if keys_pressed[pygame.K_w] and rocketRect1.y-1>0:
+        rocketRect1.y -= 1
+    # Down
+    if keys_pressed[pygame.K_s] and rocketRect1.y+1<HEIGHT:
+        rocketRect1.y += 1
+
+
+def Rocket2Controller(keys_pressed, rocketRect2):
+    # Left
+    if keys_pressed[pygame.K_j]:
+        rocketRect2.x -= 1
+    # Right
+    if keys_pressed[pygame.K_l]:
+        rocketRect2.x += 1
+    # Up
+    if keys_pressed[pygame.K_i]:
+        rocketRect2.y -= 1
+    # Down
+    if keys_pressed[pygame.K_k]:
+        rocketRect2.y += 1
+
+
 def draw_window(rocketRect1, rocketRect2):
     WIN.fill(WHITE)
+    pygame.draw.rect(WIN,BLACK, BORDER)
     WIN.blit(SPACESHIP1, (rocketRect1.x, rocketRect1.y))
     WIN.blit(SPACESHIP2, (rocketRect2.x, rocketRect2.y))
     pygame.display.update()
@@ -40,18 +74,8 @@ def main():
                 run = False
 
         keys_pressed = pygame.key.get_pressed()
-        #Left
-        if keys_pressed[pygame.K_a]:
-            rocketRect1.x -= 1
-        # Right
-        if keys_pressed[pygame.K_d]:
-            rocketRect1.x += 1
-        # Up
-        if keys_pressed[pygame.K_w]:
-            rocketRect1.y -= 1
-        # Down
-        if keys_pressed[pygame.K_s]:
-            rocketRect1.y += 1
+        Rocket1Controller(keys_pressed, rocketRect1)
+        Rocket2Controller(keys_pressed, rocketRect2)
         draw_window(rocketRect1, rocketRect2)
     pygame.quit()
 
