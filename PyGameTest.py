@@ -19,9 +19,9 @@ ROCKET2_HIT = pygame.USEREVENT+2
 
 BORDER = pygame.Rect(WIDTH // 2 - 5, 0, 10, HEIGHT)
 
-SPACESHIP_IMG1 = pygame.image.load("rocket1.png")
-SPACESHIP_IMG2 = pygame.image.load("rocket2.png")
-SPACE_IMG = pygame.transform.scale(pygame.image.load("space.png"), (WIDTH, HEIGHT))
+SPACESHIP_IMG1 = pygame.image.load("../SpaceShooter/rocket1.png")
+SPACESHIP_IMG2 = pygame.image.load("../SpaceShooter/rocket2.png")
+SPACE_IMG = pygame.transform.scale(pygame.image.load("../SpaceShooter/space.png"), (WIDTH, HEIGHT))
 
 SPACESHIP1 = pygame.transform.rotate(pygame.transform.scale(SPACESHIP_IMG1, (64, 64)), -45)
 SPACESHIP2 = pygame.transform.rotate(pygame.transform.scale(SPACESHIP_IMG2, (64, 64)), 135)
