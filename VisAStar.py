@@ -1,6 +1,8 @@
 import pygame
 import sys
 
+#https://github.com/nas-programmer/path-finding/blob/master/bfs.py
+
 pygame.init()
 
 # Screen Properties
@@ -38,6 +40,20 @@ class Node:
         self.rect = pygame.Rect(CELL_WIDTH * self.x, CELL_HEIGHT * self.y, CELL_WIDTH - 1, CELL_HEIGHT - 1)
         self.visited = False
         self.dist = 0
+        self.block = False
+
+    def add_neighbors(self, grid):
+        if self.x > 0:
+            self.neighbour.append(grid[self.x-1][self.y])
+            # print(i - 1, j)
+        if self.x < TOTAL_COL - 1:
+            self.neighbour.append(grid[self.x+1][self.y])
+            # print(i + 1, j)
+        if self.y > 0:
+            self.neighbour.append(grid[self.x][self.y-1])
+            # print(i, j-1)
+        if self.y < TOTAL_ROW - 1:
+            self.neighbour.append(grid[self.x][self.y+1])
 
     def DrawNode(self):
         pygame.draw.rect(WINDOW, WHITE, self.rect)
@@ -45,6 +61,10 @@ class Node:
     def DrawSelected(self):
         #print(self.rect)
         pygame.draw.rect(WINDOW, GREEN, self.rect)
+
+    def DrawBlock(self):
+        # print(self.rect)
+        pygame.draw.rect(WINDOW, BLACK, self.rect)
 
     def DrawNeighbour(self):
         #print(self.rect)
@@ -55,29 +75,23 @@ class Node:
         pygame.draw.rect(WINDOW, YELLOW, self.rect)
 
 
-def CreateGrid():
+def create_grid():
     for i in range(TOTAL_ROW):
-        nodeArr = []
+        arr = []
         for j in range(TOTAL_COL):
             node = Node(i, j)
             node.DrawNode()
-            nodeArr.append(node)
-            if i > 0:
-                node.neighbour.append(Node(i - 1, j))
-                #print(i - 1, j)
-            if i < TOTAL_COL - 1:
-                node.neighbour.append(Node(i + 1, j))
-                #print(i + 1, j)
-            if j > 0:
-                node.neighbour.append(Node(i, j - 1))
-                #print(i, j-1)
-            if j < TOTAL_ROW-1:
-                node.neighbour.append(Node(i, j + 1))
-                #print(i, j+1)
-        Grid.append(nodeArr)
+            arr.append(node)
+        Grid.append(arr)
 
 
-def MousePos(pos):
+def add_neighbor():
+    for i in range(TOTAL_ROW):
+        for j in range(TOTAL_COL):
+            Grid[i][j].add_neighbors(Grid)
+
+
+def mousePos(pos):
     col = pos[0] // CELL_WIDTH
     row = pos[1] // CELL_HEIGHT
 
@@ -105,43 +119,62 @@ def bfs(source, dest):
                 Grid[p.x][p.y].neighbour[i].visited = True
                 Grid[p.x][p.y].neighbour[i].dist = p.dist + 1
                 Grid[p.x][p.y].neighbour[i].parentNode=p
-                #print(Grid[p.x][p.y].neighbour[i].parentNode)
+                print(Grid[p.x][p.y].neighbour[i].parentNode)
                 queue.append(Grid[p.x][p.y].neighbour[i])
     return - 1
 
-def ShowPath(source,dest,pos):
-    col = pos[0] // CELL_WIDTH
-    row = pos[1] // CELL_HEIGHT
-    print("Dist")
-    print(Grid[col][row].dist)
+def ShowPath():
+    for i in range(50):
+        for j in range(50):
+            print(Grid[i][j].block)
+
 
 def main():
     WINDOW.fill((0, 20, 20))
-    CreateGrid()
-    check = False
-    Source=None
-    Dest=None
+    create_grid()
+    add_neighbor()
+    isDrawingWall = True
+    source = Grid[0][0]
+    dest = Grid[48][48]
+    isPathFound = False
+    source.DrawSelected()
+    dest.DrawSelected()
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 close()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                col = event.pos[0] // CELL_WIDTH
-                row = event.pos[1] // CELL_HEIGHT
-                #MousePos(event.pos)
-                if(Source==None):
-                    Source=Grid[col][row]
-                    print(Source)
-                elif(Dest==None):
-                    Dest = Grid[col][row]
-                    print(Dest)
-                if Source!=None and Dest!=None and not check:
-                    if(bfs(Source,Dest)>0):
-                        check =True
-                elif check:
-                    ShowPath(Source, Dest, event.pos)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if isDrawingWall:
+                    col = event.pos[0] // CELL_WIDTH
+                    row = event.pos[1] // CELL_HEIGHT
+                    Grid[col][row].block = True
+                    Grid[col][row].DrawBlock()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    isDrawingWall = False
+                    queue.append(source)
+                    source.visited = True
+                    while len(queue) > 0 and not isPathFound:
+                        p = queue.pop(0)
+                        p.DrawNeighbour()
+                        if Grid[p.x][p.y] == dest:
+                            isPathFound=True
+                        for i in range(len(Grid[p.x][p.y].neighbour)):
+                            if Grid[p.x][p.y].neighbour[i].visited == False and not Grid[p.x][p.y].neighbour[i].block:
+                                Grid[p.x][p.y].neighbour[i].visited = True
+                                Grid[p.x][p.y].neighbour[i].dist = p.dist + 1
+                                Grid[p.x][p.y].neighbour[i].parentNode = p
+                                queue.append(Grid[p.x][p.y].neighbour[i])
+                    if isPathFound:
+                        current_node=dest
+                        while current_node!=source:
+                            current_node.DrawParent()
+                            current_node=current_node.parentNode
 
-        pygame.display.flip()
+
+
+        pygame.display.update()
 
 
 if __name__ == "__main__":
