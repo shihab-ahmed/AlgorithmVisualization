@@ -1,8 +1,6 @@
 import pygame
 import sys
 
-# https://github.com/nas-programmer/path-finding/blob/master/astar.py
-
 pygame.init()
 
 # Screen Properties
@@ -36,7 +34,7 @@ class Node:
         self.x = row
         self.y = col
         self.neighbour = []
-        self.parent = None
+        self.parentNode = None
         self.rect = pygame.Rect(CELL_WIDTH * self.x, CELL_HEIGHT * self.y, CELL_WIDTH - 1, CELL_HEIGHT - 1)
         self.visited = False
         self.dist = 0
@@ -52,7 +50,7 @@ class Node:
         #print(self.rect)
         pygame.draw.rect(WINDOW, RED, self.rect)
 
-    def DrawPath(self):
+    def DrawParent(self):
         #print(self.rect)
         pygame.draw.rect(WINDOW, YELLOW, self.rect)
 
@@ -100,23 +98,22 @@ def bfs(source, dest):
     while len(queue) > 0:
         p = queue.pop(0)
         p.DrawNeighbour()
-        #print(p.x,p.y)
         if Grid[p.x][p.y] == dest:
             return p.dist
         for i in range(len(Grid[p.x][p.y].neighbour)):
             if Grid[p.x][p.y].neighbour[i].visited == False:
                 Grid[p.x][p.y].neighbour[i].visited = True
                 Grid[p.x][p.y].neighbour[i].dist = p.dist + 1
-                Grid[p.x][p.y].neighbour[i].parent=p
+                Grid[p.x][p.y].neighbour[i].parentNode=p
+                #print(Grid[p.x][p.y].neighbour[i].parentNode)
                 queue.append(Grid[p.x][p.y].neighbour[i])
     return - 1
 
 def ShowPath(source,dest,pos):
     col = pos[0] // CELL_WIDTH
     row = pos[1] // CELL_HEIGHT
-
-    print(Grid[col][row].parent)
-
+    print("Dist")
+    print(Grid[col][row].dist)
 
 def main():
     WINDOW.fill((0, 20, 20))
