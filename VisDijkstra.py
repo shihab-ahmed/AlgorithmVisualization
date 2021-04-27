@@ -1,154 +1,204 @@
-"""Djikstra's Path Finding"""
+import random
 
-import pygame, sys, random, math
-from collections import deque
-from tkinter import messagebox, Tk
+import pygame
+import sys
 
-size = (width, height) = 640, 480
 pygame.init()
 
-win = pygame.display.set_mode(size)
-pygame.display.set_caption("Dijktdtra's Path Finding")
-clock = pygame.time.Clock()
+# Screen Properties
+WIDTH = 800
+HEIGHT = 800
+SCREEN_SIZE = (WIDTH, HEIGHT)
+WINDOW = pygame.display.set_mode(SCREEN_SIZE)
+FPS = 60
+Clock = pygame.time.Clock()
+TOTAL_COL = 40
+TOTAL_ROW = 40
+CELL_WIDTH = WIDTH // TOTAL_COL
+CELL_HEIGHT = HEIGHT // TOTAL_ROW
+pygame.display.set_caption("Algorithm Vis")
 
-cols, rows = 64, 48
+BLACK = (0, 0, 0)
+DARK_BLUE = (4, 24, 34)
+GREEN = (0, 255, 25)
+LIME = (0, 220, 95)
+RED = (255, 0, 0)
+PINK = (255, 0, 205)
+CYAN = (0, 255, 255)
+YELLOW = (255, 255, 0)
 
-w = width // cols
-h = height // rows
-
-grid = []
-queue, visited = deque(), []
+Grid = []
 path = []
+queue = []
+visited = []
+cost = {}
 
-
-class Spot:
-    def __init__(self, i, j):
-        self.x, self.y = i, j
-        self.f, self.g, self.h = 0, 0, 0
-        self.neighbors = []
-        self.prev = None
-        self.wall = False
+class Node:
+    def __init__(self, row, col):
+        self.x = row
+        self.y = col
+        self.neighbour = []
+        self.parentNode = None
+        self.rect = pygame.Rect(CELL_WIDTH * self.x, CELL_HEIGHT * self.y, CELL_WIDTH - 1, CELL_HEIGHT - 1)
         self.visited = False
-        # if random.randint(0, 100) < 20:
-        #     self.wall = True
-
-    def show(self, win, col, shape=1):
-        if self.wall == True:
-            col = (0, 0, 0)
-        if shape == 1:
-            pygame.draw.rect(win, col, (self.x * w, self.y * h, w - 1, h - 1))
-        else:
-            pygame.draw.circle(win, col, (self.x * w + w // 2, self.y * h + h // 2), w // 3)
-
+        self.dist = 0
+        self.block = False
+        self.weight = random.randint(1,5)
     def add_neighbors(self, grid):
-        if self.x < cols - 1:
-            self.neighbors.append(grid[self.x + 1][self.y])
         if self.x > 0:
-            self.neighbors.append(grid[self.x - 1][self.y])
-        if self.y < rows - 1:
-            self.neighbors.append(grid[self.x][self.y + 1])
+            self.neighbour.append(grid[self.x - 1][self.y])
+            # print(i - 1, j)
+        if self.x < TOTAL_COL - 1:
+            self.neighbour.append(grid[self.x + 1][self.y])
+            # print(i + 1, j)
         if self.y > 0:
-            self.neighbors.append(grid[self.x][self.y - 1])
+            self.neighbour.append(grid[self.x][self.y - 1])
+            # print(i, j-1)
+        if self.y < TOTAL_ROW - 1:
+            self.neighbour.append(grid[self.x][self.y + 1])
+
+    def DrawNode(self):
+        DARK_BLUE = (56, 84+self.weight*5, 112)
+        pygame.draw.rect(WINDOW, DARK_BLUE, self.rect)
+
+    def DrawVisited(self):
+        pygame.draw.rect(WINDOW, GREEN, self.rect)
+
+    def DrawBlock(self):
+        pygame.draw.rect(WINDOW, BLACK, self.rect)
+
+    def DrawQueue(self):
+        pygame.draw.rect(WINDOW, LIME, self.rect)
+
+    def DrawPath(self):
+        pygame.draw.rect(WINDOW, CYAN, self.rect)
+
+    def DrawSourceAndDestination(self):
+        pygame.draw.rect(WINDOW, PINK, self.rect)
+
+def create_grid():
+    for i in range(TOTAL_ROW):
+        arr = []
+        for j in range(TOTAL_COL):
+            node = Node(i, j)
+            cost[node] = 10000
+            arr.append(node)
+        Grid.append(arr)
 
 
-def clickWall(pos, state):
-    i = pos[0] // w
-    j = pos[1] // h
-    grid[i][j].wall = state
+def add_neighbor():
+    for i in range(TOTAL_ROW):
+        for j in range(TOTAL_COL):
+            Grid[i][j].add_neighbors(Grid)
+
+def close():
+    print("Closing")
+    pygame.quit()
+    sys.exit()
 
 
-def place(pos):
-    i = pos[0] // w
-    j = pos[1] // h
-    return w, h
+def get_min_cost():
+    min_node = next(iter(cost))
+    for x in cost:
+        if cost[min_node] > cost[x] and not x.visited:
+            min_node = x
+
+    return min_node
 
 
-for i in range(cols):
-    arr = []
-    for j in range(rows):
-        arr.append(Spot(i, j))
-    grid.append(arr)
-
-for i in range(cols):
-    for j in range(rows):
-        grid[i][j].add_neighbors(grid)
-
-start = grid[cols // 2][rows // 2]
-end = grid[cols - 50][rows - cols // 2]
-start.wall = False
-end.wall = False
-
-queue.append(start)
-start.visited = True
+def show_update(source,destination):
+    WINDOW.fill(BLACK)
+    print("show")
+    for i in range(TOTAL_ROW):
+        for j in range(TOTAL_COL):
+            node = Grid[i][j]
+            node.DrawNode()
+            if node in path:
+                node.DrawPath()
+            elif node in visited:
+                print("visited")
+                node.DrawVisited()
+            if node in queue:
+                node.DrawQueue()
+            if node.block:
+                node.DrawBlock()
+            if node == source:
+                node.DrawSourceAndDestination()
+            if node == destination:
+                node.DrawSourceAndDestination()
+            pass
+    pygame.display.flip()
 
 
 def main():
-    flag = False
-    noflag = True
-    startflag = False
-
+    WINDOW.fill((0, 20, 20))
+    create_grid()
+    add_neighbor()
+    isDrawingWall = True
+    source = Grid[30][30]
+    destination = Grid[30][39]
+    isPathFound = False
+    show_update(source,destination)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONUP:
+                close()
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 if pygame.mouse.get_pressed(3):
-                    clickWall(pygame.mouse.get_pos(), True)
-                if pygame.mouse.get_pressed(3):
-                    clickWall(pygame.mouse.get_pos(), False)
+                    if isDrawingWall:
+                        col = event.pos[0] // CELL_WIDTH
+                        row = event.pos[1] // CELL_HEIGHT
+                        if Grid[col][row]!=source and Grid[col][row]!=destination :
+                            Grid[col][row].block = True
+                            show_update(source,destination)
             if event.type == pygame.MOUSEMOTION:
                 if pygame.mouse.get_pressed()[0]:
-                    clickWall(pygame.mouse.get_pos(), True)
+                    if isDrawingWall:
+                        col = event.pos[0] // CELL_WIDTH
+                        row = event.pos[1] // CELL_HEIGHT
+                        if Grid[col][row] != source and Grid[col][row] != destination:
+                            Grid[col][row].block = True
+                            show_update(source,destination)
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    startflag = True
-
-        if startflag:
-            if len(queue) > 0:
-                current = queue.popleft()
-                if current == end:
-                    temp = current
-                    while temp.prev:
-                        path.append(temp.prev)
-                        temp = temp.prev
-                    if not flag:
-                        flag = True
-                        print("Done")
-                    elif flag:
-                        continue
-                if flag == False:
-                    for i in current.neighbors:
-                        if not i.visited and not i.wall:
-                            i.visited = True
-                            i.prev = current
-                            queue.append(i)
-            else:
-                if noflag and not flag:
-                    Tk().wm_withdraw()
-                    messagebox.showinfo("No Solution", "There was no solution")
-                    noflag = False
-                else:
-                    continue
-
-        win.fill((0, 20, 20))
-        for i in range(cols):
-            for j in range(rows):
-                spot = grid[i][j]
-                spot.show(win, (44, 62, 80))
-                if spot in path:
-                    spot.show(win, (192, 57, 43))
-                elif spot.visited:
-                    spot.show(win, (39, 174, 96))
-                if spot in queue:
-                    spot.show(win, (44, 62, 80))
-                    spot.show(win, (39, 174, 96), 0)
-                if spot == start:
-                    spot.show(win, (0, 255, 200))
-                if spot == end:
-                    spot.show(win, (0, 120, 255))
-
-        pygame.display.flip()
+                if event.key == pygame.K_p:
+                    isDrawingWall = False
+                    current_node = source
+                    cost[current_node] = 0
+                    #while current_node != destination:
+                    for node in current_node.neighbour:
+                        print(cost[current_node])
+                        if node.weight + cost[current_node] < cost[node]:
+                            cost[node] = node.weight + cost[current_node] < cost[node]
+                            node.parentNode = current_node
+                            node.visited = True
+                            print("visited")
+                    current_node.visited = True
+                    current_node = get_min_cost()
 
 
-main()
+                    show_update(source, destination)
+                    """
+                    while current_node!=destination:
+                        for node in current_node.neighbour:
+                            print(node)
+                            if node.weight<0:
+                                cost[node]=current_node.weight
+                                node.parentNode = current_node
+                                print("cost node less than 0")
+                            elif node.weight+cost[current_node]<cost[node]:
+                                cost[node] = node.weight+cost[current_node]<cost[node]
+                                node.parentNode = current_node
+                                print("cost node"+ node.weight+cost[current_node])
+                        current_node.visited = True
+                        current_node = min(cost,key=cost.get)
+                        ShowUpdate(source,destination)
+                    """
+                    if isPathFound:
+                        current_node = destination
+                        while current_node != source:
+                            path.append(current_node)
+                            current_node = current_node.parentNode
+                            show_update(source,destination)
+
+if __name__ == "__main__":
+    main()

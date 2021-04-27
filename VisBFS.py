@@ -1,3 +1,5 @@
+import random
+
 import pygame
 import sys
 
@@ -79,7 +81,6 @@ def create_grid():
         arr = []
         for j in range(TOTAL_COL):
             node = Node(i, j)
-            node.DrawNode()
             arr.append(node)
         Grid.append(arr)
 
@@ -133,7 +134,7 @@ def main():
     current_row_max = TOTAL_ROW
     current_col_min = 0
     current_col_max = TOTAL_COL
-    source = Grid[30][30]
+    source = Grid[10][10]
     destination = Grid[30][39]
     isPathFound = False
     ShowUpdate(source,destination)
@@ -175,7 +176,7 @@ def main():
                                 Grid[p.x][p.y].neighbour[i].dist = p.dist + 1
                                 Grid[p.x][p.y].neighbour[i].parentNode = p
                                 queue.append(Grid[p.x][p.y].neighbour[i])
-                                ShowUpdate(source,destination)
+                                #ShowUpdate(source,destination)
 
                     if isPathFound:
                         current_node = destination
