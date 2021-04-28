@@ -102,21 +102,18 @@ def get_min_cost():
     for x in cost:
         if cost[min_node] > cost[x] and not x.visited:
             min_node = x
-
     return min_node
 
 
-def show_update(source,destination):
+def show_update(source, destination):
     WINDOW.fill(BLACK)
-    print("show")
     for i in range(TOTAL_ROW):
         for j in range(TOTAL_COL):
             node = Grid[i][j]
             node.DrawNode()
             if node in path:
                 node.DrawPath()
-            elif node in visited:
-                print("visited")
+            elif node.visited:
                 node.DrawVisited()
             if node in queue:
                 node.DrawQueue()
@@ -138,6 +135,7 @@ def main():
     source = Grid[30][30]
     destination = Grid[30][39]
     isPathFound = False
+    lim=0
     show_update(source,destination)
     while True:
         for event in pygame.event.get():
@@ -164,35 +162,17 @@ def main():
                     isDrawingWall = False
                     current_node = source
                     cost[current_node] = 0
-                    #while current_node != destination:
-                    for node in current_node.neighbour:
-                        print(cost[current_node])
-                        if node.weight + cost[current_node] < cost[node]:
-                            cost[node] = node.weight + cost[current_node] < cost[node]
-                            node.parentNode = current_node
-                            node.visited = True
-                            print("visited")
-                    current_node.visited = True
-                    current_node = get_min_cost()
-
-
-                    show_update(source, destination)
-                    """
-                    while current_node!=destination:
+                    while current_node != destination:
                         for node in current_node.neighbour:
-                            print(node)
-                            if node.weight<0:
-                                cost[node]=current_node.weight
+                            if node.weight + cost[current_node] < cost[node] and not node.block:
+                                cost[node] = node.weight + cost[current_node]
                                 node.parentNode = current_node
-                                print("cost node less than 0")
-                            elif node.weight+cost[current_node]<cost[node]:
-                                cost[node] = node.weight+cost[current_node]<cost[node]
-                                node.parentNode = current_node
-                                print("cost node"+ node.weight+cost[current_node])
                         current_node.visited = True
-                        current_node = min(cost,key=cost.get)
-                        ShowUpdate(source,destination)
-                    """
+                        current_node = get_min_cost()
+                        if current_node==destination:
+                            isPathFound=True
+                            break
+                        show_update(source, destination)
                     if isPathFound:
                         current_node = destination
                         while current_node != source:
