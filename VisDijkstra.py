@@ -33,6 +33,7 @@ queue = []
 visited = []
 cost = {}
 
+
 class Node:
     def __init__(self, row, col):
         self.x = row
@@ -43,22 +44,20 @@ class Node:
         self.visited = False
         self.dist = 0
         self.block = False
-        self.weight = random.randint(1,5)
+        self.weight = random.randint(1, 5)
+
     def add_neighbors(self, grid):
         if self.x > 0:
             self.neighbour.append(grid[self.x - 1][self.y])
-            # print(i - 1, j)
         if self.x < TOTAL_COL - 1:
             self.neighbour.append(grid[self.x + 1][self.y])
-            # print(i + 1, j)
         if self.y > 0:
             self.neighbour.append(grid[self.x][self.y - 1])
-            # print(i, j-1)
         if self.y < TOTAL_ROW - 1:
             self.neighbour.append(grid[self.x][self.y + 1])
 
     def DrawNode(self):
-        DARK_BLUE = (56, 84+self.weight*5, 112)
+        DARK_BLUE = (56, 84 + self.weight * 5, 112)
         pygame.draw.rect(WINDOW, DARK_BLUE, self.rect)
 
     def DrawVisited(self):
@@ -76,6 +75,7 @@ class Node:
     def DrawSourceAndDestination(self):
         pygame.draw.rect(WINDOW, PINK, self.rect)
 
+
 def create_grid():
     for i in range(TOTAL_ROW):
         arr = []
@@ -90,6 +90,7 @@ def add_neighbor():
     for i in range(TOTAL_ROW):
         for j in range(TOTAL_COL):
             Grid[i][j].add_neighbors(Grid)
+
 
 def close():
     print("Closing")
@@ -106,6 +107,7 @@ def get_min_cost():
 
 
 def show_update(source, destination):
+    count=0
     WINDOW.fill(BLACK)
     for i in range(TOTAL_ROW):
         for j in range(TOTAL_COL):
@@ -115,15 +117,17 @@ def show_update(source, destination):
                 node.DrawPath()
             elif node.visited:
                 node.DrawVisited()
-            if node in queue:
+                count+=1
+            elif node in queue:
                 node.DrawQueue()
-            if node.block:
+            elif node.block:
                 node.DrawBlock()
-            if node == source:
+            elif node == source:
                 node.DrawSourceAndDestination()
-            if node == destination:
+            elif node == destination:
                 node.DrawSourceAndDestination()
             pass
+    print(count)
     pygame.display.flip()
 
 
@@ -135,8 +139,7 @@ def main():
     source = Grid[30][30]
     destination = Grid[30][39]
     isPathFound = False
-    lim=0
-    show_update(source,destination)
+    show_update(source, destination)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -146,9 +149,9 @@ def main():
                     if isDrawingWall:
                         col = event.pos[0] // CELL_WIDTH
                         row = event.pos[1] // CELL_HEIGHT
-                        if Grid[col][row]!=source and Grid[col][row]!=destination :
+                        if Grid[col][row] != source and Grid[col][row] != destination:
                             Grid[col][row].block = True
-                            show_update(source,destination)
+                            show_update(source, destination)
             if event.type == pygame.MOUSEMOTION:
                 if pygame.mouse.get_pressed()[0]:
                     if isDrawingWall:
@@ -156,7 +159,7 @@ def main():
                         row = event.pos[1] // CELL_HEIGHT
                         if Grid[col][row] != source and Grid[col][row] != destination:
                             Grid[col][row].block = True
-                            show_update(source,destination)
+                            show_update(source, destination)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_p:
                     isDrawingWall = False
@@ -167,10 +170,11 @@ def main():
                             if node.weight + cost[current_node] < cost[node] and not node.block:
                                 cost[node] = node.weight + cost[current_node]
                                 node.parentNode = current_node
-                        current_node.visited = True
-                        current_node = get_min_cost()
-                        if current_node==destination:
-                            isPathFound=True
+                        if not current_node.visited:
+                            current_node.visited = True
+                            current_node = get_min_cost()
+                        if current_node == destination:
+                            isPathFound = True
                             break
                         show_update(source, destination)
                     if isPathFound:
@@ -178,7 +182,8 @@ def main():
                         while current_node != source:
                             path.append(current_node)
                             current_node = current_node.parentNode
-                            show_update(source,destination)
+                            show_update(source, destination)
+
 
 if __name__ == "__main__":
     main()

@@ -1,8 +1,9 @@
 import random
-
+#https://github.com/BaijayantaRoy/Medium-Article/blob/master/A_Star.ipynb
+#https://github.com/nas-programmer/path-finding/blob/master/astar.py
 import pygame
 import sys
-
+import math
 pygame.init()
 
 # Screen Properties
@@ -41,24 +42,29 @@ class Node:
         self.parentNode = None
         self.rect = pygame.Rect(CELL_WIDTH * self.x, CELL_HEIGHT * self.y, CELL_WIDTH - 1, CELL_HEIGHT - 1)
         self.visited = False
-        self.dist = 0
         self.block = False
-        self.weight = random.randint(1,5)
+        self.f = 0
+        self.g = 0
+        self.h = 0
     def add_neighbors(self, grid):
         if self.x > 0:
             self.neighbour.append(grid[self.x - 1][self.y])
-            # print(i - 1, j)
         if self.x < TOTAL_COL - 1:
             self.neighbour.append(grid[self.x + 1][self.y])
-            # print(i + 1, j)
         if self.y > 0:
             self.neighbour.append(grid[self.x][self.y - 1])
-            # print(i, j-1)
         if self.y < TOTAL_ROW - 1:
             self.neighbour.append(grid[self.x][self.y + 1])
+        if self.x < TOTAL_COL - 1 and self.y < TOTAL_ROW - 1:
+            self.neighbour.append(grid[self.x + 1][self.y + 1])
+        if self.x < TOTAL_COL - 1 and self.y > 0:
+            self.neighbour.append(grid[self.x + 1][self.y - 1])
+        if self.x > 0 and self.y < TOTAL_ROW - 1:
+            self.neighbour.append(grid[self.x - 1][self.y + 1])
+        if self.x > 0 and self.y > 0:
+            self.neighbour.append(grid[self.x - 1][self.y - 1])
 
     def DrawNode(self):
-        DARK_BLUE = (56, 84+self.weight*5, 112)
         pygame.draw.rect(WINDOW, DARK_BLUE, self.rect)
 
     def DrawVisited(self):
@@ -85,6 +91,8 @@ def create_grid():
             arr.append(node)
         Grid.append(arr)
 
+def heuristics(a, b):
+    return math.sqrt((a.x - b.x)**2 + abs(a.y - b.y)**2)
 
 def add_neighbor():
     for i in range(TOTAL_ROW):
@@ -95,15 +103,6 @@ def close():
     print("Closing")
     pygame.quit()
     sys.exit()
-
-
-def get_min_cost():
-    min_node = next(iter(cost))
-    for x in cost:
-        if cost[min_node] > cost[x] and not x.visited:
-            min_node = x
-    return min_node
-
 
 def show_update(source, destination):
     WINDOW.fill(BLACK)
@@ -135,7 +134,6 @@ def main():
     source = Grid[30][30]
     destination = Grid[30][39]
     isPathFound = False
-    lim=0
     show_update(source,destination)
     while True:
         for event in pygame.event.get():
@@ -148,7 +146,7 @@ def main():
                         row = event.pos[1] // CELL_HEIGHT
                         if Grid[col][row]!=source and Grid[col][row]!=destination :
                             Grid[col][row].block = True
-                            show_update(source,destination)
+                            #show_update(source,destination)
             if event.type == pygame.MOUSEMOTION:
                 if pygame.mouse.get_pressed()[0]:
                     if isDrawingWall:
@@ -156,29 +154,15 @@ def main():
                         row = event.pos[1] // CELL_HEIGHT
                         if Grid[col][row] != source and Grid[col][row] != destination:
                             Grid[col][row].block = True
-                            show_update(source,destination)
+                            #show_update(source, destination)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_p:
-                    isDrawingWall = False
-                    current_node = source
-                    cost[current_node] = 0
-                    while current_node != destination:
-                        for node in current_node.neighbour:
-                            if node.weight + cost[current_node] < cost[node] and not node.block:
-                                cost[node] = node.weight + cost[current_node]
-                                node.parentNode = current_node
-                        current_node.visited = True
-                        current_node = get_min_cost()
-                        if current_node==destination:
-                            isPathFound=True
-                            break
-                        show_update(source, destination)
                     if isPathFound:
                         current_node = destination
                         while current_node != source:
                             path.append(current_node)
                             current_node = current_node.parentNode
-                            show_update(source,destination)
+                            #show_update(source,destination)
 
 if __name__ == "__main__":
     main()
