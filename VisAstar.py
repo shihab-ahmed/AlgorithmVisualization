@@ -22,7 +22,7 @@ pygame.display.set_caption("Algorithm Vis")
 BLACK = (0, 0, 0)
 DARK_BLUE = (4, 24, 34)
 GREEN = (0, 255, 25)
-LIME = (0, 220, 95)
+LIME = (0, 200, 95)
 RED = (255, 0, 0)
 PINK = (255, 0, 205)
 CYAN = (0, 255, 255)
@@ -131,10 +131,12 @@ def main():
     create_grid()
     add_neighbor()
     isDrawingWall = True
-    source = Grid[30][30]
+    source = Grid[10][10]
     destination = Grid[30][39]
     isPathFound = False
     show_update(source,destination)
+    counter=0;
+    max_count=(len(Grid) // 2) ** 10
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -145,24 +147,48 @@ def main():
                         col = event.pos[0] // CELL_WIDTH
                         row = event.pos[1] // CELL_HEIGHT
                         if Grid[col][row]!=source and Grid[col][row]!=destination :
-                            Grid[col][row].block = True
-                            #show_update(source,destination)
+                            Grid[col][row].block = not Grid[col][row].block
+                            show_update(source,destination)
             if event.type == pygame.MOUSEMOTION:
                 if pygame.mouse.get_pressed()[0]:
                     if isDrawingWall:
                         col = event.pos[0] // CELL_WIDTH
                         row = event.pos[1] // CELL_HEIGHT
                         if Grid[col][row] != source and Grid[col][row] != destination:
-                            Grid[col][row].block = True
-                            #show_update(source, destination)
+                            Grid[col][row].block = not Grid[col][row].block
+                            show_update(source, destination)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_p:
+                    queue.append(source)
+                    while len(queue) > 0:
+                        counter += 1
+                        print(len(queue))
+                        if counter > max_count:
+                            print("Path not found")
+                            return
+                        current_node = queue[0]
+                        for node in queue:
+                            if node.f<current_node.f:
+                                node.parentNode=current_node
+                                current_node=node
+                        queue.remove(current_node)
+                        current_node.visited = True
+                        if current_node == destination:
+                            isPathFound=True
+                            break
+                        for node in current_node.neighbour:
+                            if not node.block and not node.visited:
+                                node.g=current_node.g+1
+                                node.h=heuristics(node, destination)
+                                node.f=node.g+node.h
+                                queue.append(node)
+                        show_update(source,destination)
                     if isPathFound:
                         current_node = destination
                         while current_node != source:
                             path.append(current_node)
                             current_node = current_node.parentNode
-                            #show_update(source,destination)
+                            show_update(source,destination)
 
 if __name__ == "__main__":
     main()
